@@ -1,4 +1,5 @@
 use hamming::*;
+use crate::util::bin2dec;
 
 mod util;
 
@@ -19,6 +20,8 @@ fn main() {
         eb |= *bit;
     });
 
+    println!("input:   {:07b}", bin2dec(input.bits));
+    println!("output:  {:07b}", bin2dec(output.bits.clone()));
     println!("error in bit: {:?}", eb);
 
 }

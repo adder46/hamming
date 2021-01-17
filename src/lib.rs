@@ -1,4 +1,4 @@
-use std::ops::{BitOrAssign, BitXorAssign, ShlAssign};
+use std::ops::{BitOrAssign, BitXor, BitXorAssign, ShlAssign};
 use rand::Rng;
 use crate::util::{dec2bin, is_power_of_2};
 
@@ -6,6 +6,13 @@ mod util;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Bit(pub u8);
+
+impl BitXor for Bit {
+    type Output = Self;
+    fn bitxor(self, rhs: Self) -> Self {
+        Bit(self.0 ^ rhs.0)
+    }
+}
 
 impl BitXorAssign for Bit {
     fn bitxor_assign(&mut self, rhs: Self) {
@@ -60,7 +67,7 @@ impl BinaryNumber {
 
     pub fn flip_random_bit(&mut self) {
         let random_index = rand::thread_rng().gen_range(0..self.bits.len());
-        self.bits[random_index] = Bit(self.bits[random_index].0 ^ 1);  
+        self.bits[random_index] = self.bits[random_index] ^ Bit(1);  
     }
 
     fn covered_positions(&self) -> Vec<Vec<u8>> {
