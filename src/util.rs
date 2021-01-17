@@ -2,9 +2,9 @@ use crate::Bit;
 
 pub fn bin2dec(bits: Vec<Bit>) -> u8 {
     let mut result = 0;
-    bits.into_iter().for_each(|b| {
+    bits.into_iter().for_each(|bit| {
         result <<= 1;
-        result |= b.0;
+        result |= bit.0;
     });
     result
 }
@@ -17,6 +17,3 @@ pub fn dec2bin(n: u8) -> Vec<Bit> {
         .collect()
 }
 
-pub fn is_power_of_2(n: u8) -> bool {
-    n & (n - 1) == 0
-}
