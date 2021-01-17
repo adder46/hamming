@@ -1,6 +1,6 @@
-use std::ops::{BitOrAssign, BitXor, BitXorAssign, ShlAssign};
-use rand::Rng;
 use crate::util::{dec2bin, is_power_of_2};
+use rand::Rng;
+use std::ops::{BitOrAssign, BitXor, BitXorAssign, ShlAssign};
 
 mod util;
 
@@ -41,7 +41,7 @@ impl BinaryNumber {
     pub fn new(n: u8) -> BinaryNumber {
         BinaryNumber { bits: dec2bin(n) }
     }
-  
+
     pub fn parity_bits(&self) -> Vec<u8> {
         (1..self.bits.len() + 1)
             .map(|i| i as u8)
@@ -67,29 +67,31 @@ impl BinaryNumber {
 
     pub fn flip_random_bit(&mut self) {
         let random_index = rand::thread_rng().gen_range(0..self.bits.len());
-        self.bits[random_index] = self.bits[random_index] ^ Bit(1);  
+        self.bits[random_index] = self.bits[random_index] ^ Bit(1);
     }
 
     fn covered_positions(&self) -> Vec<Vec<u8>> {
         let mut cp = vec![];
         self.parity_bits().into_iter().for_each(|pb| {
-            cp.push((1..self.bits.len() + 1)
-                .map(|i| i as u8)
-                .filter(|b| pb & *b == pb)
-                .collect());
+            cp.push(
+                (1..self.bits.len() + 1)
+                    .map(|i| i as u8)
+                    .filter(|b| pb & *b == pb)
+                    .collect(),
+            );
         });
         cp
     }
 
     fn covered_bits(&self) -> Vec<Vec<(u8, Bit)>> {
         let mut bits = vec![];
-        for positions in self.covered_positions().iter() {
-            let mut covered_by_pos = vec![];
-            for position in positions.iter() {
-                covered_by_pos.push((*position, self.bits[*position as usize - 1]));
-            }
-            bits.push(covered_by_pos);
-        }
+        self.covered_positions().into_iter().for_each(|cp| {
+            let mut covered = vec![];
+            cp.into_iter().for_each(|p| {
+                covered.push((p, self.bits[p as usize - 1]));
+            });
+            bits.push(covered);
+        });
         bits
     }
 }
@@ -172,7 +174,7 @@ mod tests {
     fn decimal2binary(input: u8, expected: Vec<Bit>) {
         assert_eq!(dec2bin(input), expected);
     }
-    
+
     #[rstest(
         x,
         case(1),
