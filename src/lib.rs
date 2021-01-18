@@ -14,10 +14,19 @@ impl BinaryNumber {
         BinaryNumber { bits: dec2bin(n) }
     }
 
+    pub fn number_of_check_bits(&self) -> i32 {
+        let base = 2f32;
+        let mut k = 0;
+        loop {
+            if (base.powi(k) - self.bits.len() as f32 - 1f32) as i32 >= k {
+                return k;
+            }
+            k += 1;
+        }
+    }
+
     pub fn check_bit_positions(&self) -> Vec<u8> {
-        (1u8..self.bits.len() as u8 + 1)
-            .filter(|i| i.is_power_of_two())
-            .collect()
+        (0..self.number_of_check_bits()).map(|i| 1 << i).collect()
     }
 
     pub fn compute_check_bits(&self) -> Vec<Bit> {
@@ -40,7 +49,7 @@ impl BinaryNumber {
 
     pub fn flip_random_bit(&mut self) {
         let random_index = rand::thread_rng().gen_range(0..self.bits.len());
-        self.bits[random_index] = self.bits[random_index] ^ Bit(1);
+        self.bits[random_index] ^= Bit(1);
     }
 
     fn covered_positions(&self) -> Vec<Vec<u8>> {
@@ -99,7 +108,6 @@ impl ShlAssign for Bit {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::util::bin2dec;
     use rstest::*;
 
     #[rstest(
@@ -116,8 +124,7 @@ mod tests {
 
     #[rstest(
         input, expected,
-        case(0b10, vec![1, 2]),
-        case(0b10101, vec![1, 2, 4]),
+        case(0b10101, vec![1, 2, 4, 8]),
         case(0b10101010, vec![1, 2, 4, 8]),
     )]
     fn check_bits(input: u8, expected: Vec<u8>) {
@@ -154,24 +161,18 @@ mod tests {
     }
 
     #[rstest(
-        input, expected,
-        case(vec![Bit(0)], 0),
-        case(vec![Bit(1)], 1),
-        case(vec![Bit(1), Bit(1)], 3),
-        case(vec![Bit(1), Bit(0), Bit(0), Bit(0)], 8),
+        input,
+        expected,
+        case(0b10, 3),
+        case(0b101, 3),
+        case(0b1010, 3),
+        case(0b10101, 4),
+        case(0b101010, 4),
+        case(0b1010101, 4),
+        case(0b10101010, 4)
     )]
-    fn binary2decimal(input: Vec<Bit>, expected: u8) {
-        assert_eq!(bin2dec(input), expected);
-    }
-
-    #[rstest(
-        input, expected,
-        case(0, vec![Bit(0)]),
-        case(1, vec![Bit(1)]),
-        case(3, vec![Bit(1), Bit(1)]),
-        case(8, vec![Bit(1), Bit(0), Bit(0), Bit(0)]),
-    )]
-    fn decimal2binary(input: u8, expected: Vec<Bit>) {
-        assert_eq!(dec2bin(input), expected);
+    fn num_of_check_bits(input: u8, expected: i32) {
+        let binary_number = BinaryNumber::new(input);
+        assert_eq!(binary_number.number_of_check_bits(), expected);
     }
 }
