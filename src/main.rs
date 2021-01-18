@@ -17,12 +17,7 @@ fn main() {
     let mut output = input.clone();
     output.flip_random_bit();
 
-    let mut erroneous_bit = 0;
-
-    output.compute_check_bits().iter().rev().for_each(|bit| {
-        erroneous_bit <<= 1;
-        erroneous_bit |= bit.0;
-    });
+    let erroneous_bit = bin2dec(output.compute_check_bits().into_iter().rev().collect());
 
     println!("input:   {:07b}", bin2dec(input.bits));
     println!("output:  {:07b}", bin2dec(output.bits));
