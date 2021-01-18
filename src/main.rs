@@ -8,10 +8,10 @@ fn main() {
 
     for (index, check_bit) in input
         .check_bit_positions()
-        .iter()
-        .zip(input.compute_check_bits().iter())
+        .into_iter()
+        .zip(input.compute_check_bits().into_iter())
     {
-        input.insert(*index as usize, *check_bit);
+        input.insert(index as usize, check_bit);
     }
 
     let mut output = input.clone();
