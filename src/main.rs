@@ -17,11 +17,11 @@ fn main() {
     let mut output = input.clone();
     output.flip_random_bit();
 
-    let mut erroneous_bit = Bit(0);
+    let mut erroneous_bit = 0;
 
     output.compute_check_bits().iter().rev().for_each(|bit| {
-        erroneous_bit <<= Bit(1);
-        erroneous_bit |= *bit;
+        erroneous_bit <<= 1;
+        erroneous_bit |= bit.0;
     });
 
     println!("input:   {:07b}", bin2dec(input.bits));
