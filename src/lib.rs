@@ -18,7 +18,8 @@ impl BinaryNumber {
         let base = 2f32;
         let mut k = 0;
         loop {
-            if (base.powi(k) - self.bits.len() as f32 - 1f32) as i32 >= k {
+            // 2^k - n - 1 >= k
+            if (base.powi(k) - (self.bits.len() + 1) as f32) as i32 >= k {
                 return k;
             }
             k += 1;
