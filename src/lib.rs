@@ -7,11 +7,15 @@ mod util;
 #[derive(Clone, Debug, PartialEq)]
 pub struct BinaryNumber {
     pub bits: Vec<Bit>,
+    payload_length: u8,
 }
 
 impl BinaryNumber {
     pub fn new(n: u8) -> BinaryNumber {
-        BinaryNumber { bits: dec2bin(n) }
+        BinaryNumber {
+            bits: dec2bin(n),
+            payload_length: ((n as f32).log2() + 1.0) as u8,
+        }
     }
 
     pub fn number_of_check_bits(&self) -> i32 {
@@ -19,7 +23,7 @@ impl BinaryNumber {
         let mut k = 0;
         loop {
             // 2^k - n - 1 >= k
-            if (base.powi(k) - (self.bits.len() + 1) as f32) as i32 >= k {
+            if (base.powi(k) - (self.payload_length + 1) as f32) as i32 >= k {
                 return k;
             }
             k += 1;
@@ -36,21 +40,25 @@ impl BinaryNumber {
             .into_iter()
             .for_each(|group| {
                 let mut c_n = Bit(0);
-                group.into_iter().for_each(|bit| {
-                    c_n ^= bit;
-                });
+                group.into_iter().for_each(|bit| c_n ^= bit);
                 c.push(c_n);
             });
         c
     }
 
-    pub fn insert(&mut self, index: usize, bit: Bit) {
-        self.bits.insert(index - 1, bit);
+    pub fn make_space_for_check_bits(&mut self) {
+        self.check_bit_positions().into_iter().for_each(|pos| {
+            self.bits.insert(pos as usize - 1, Bit(0));
+        });
+    }
+
+    pub fn flip_bit(&mut self, index: usize) {
+        self.bits[index - 1] ^= Bit(1);
     }
 
     pub fn flip_random_bit(&mut self) {
         let random_index = rand::thread_rng().gen_range(0..self.bits.len());
-        self.bits[random_index] ^= Bit(1);
+        self.bits[random_index - 1] ^= Bit(1);
     }
 
     fn covered_positions(&self) -> Vec<Vec<u8>> {
@@ -125,6 +133,7 @@ mod tests {
 
     #[rstest(
         input, expected,
+        case(0b1010, vec![1, 2, 4]),
         case(0b10101, vec![1, 2, 4, 8]),
         case(0b10101010, vec![1, 2, 4, 8]),
     )]
@@ -149,6 +158,11 @@ mod tests {
 
     #[rstest(
         input, expected,
+        case(0b1010, vec![
+            vec![Bit(1), Bit(1)],
+            vec![Bit(0), Bit(1)],
+            vec![Bit(0)],
+        ]),
         case(0b10101010, vec![
             vec![Bit(1), Bit(1), Bit(1), Bit(1)],
             vec![Bit(0), Bit(1), Bit(0), Bit(1)],
