@@ -1,5 +1,5 @@
 use crate::util::bin2dec;
-use hamming::*;
+use hamming::{BinaryNumber, Bit};
 
 mod util;
 
