@@ -18,14 +18,7 @@ fn main() {
     let mut output = input.clone();
     output.flip_bit(3);
 
-    let erroneous_bit = bin2dec(
-        output
-            .compute_check_bits()
-            .into_iter()
-            .rev()
-            .map(|x| x.into())
-            .collect(),
-    );
+    let erroneous_bit = bin2dec(output.compute_check_bits().into_iter().rev().collect());
 
     println!("input:   {:07b}", bin2dec(input.bits));
     println!("output:  {:07b}", bin2dec(output.bits));
