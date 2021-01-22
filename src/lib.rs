@@ -58,7 +58,7 @@ impl BinaryNumber {
 
     pub fn flip_random_bit(&mut self) {
         let random_index = rand::thread_rng().gen_range(0..self.bits.len());
-        self.bits[random_index - 1] ^= Bit(1);
+        self.bits[random_index] ^= Bit(1);
     }
 
     fn covered_positions(&self) -> Vec<Vec<u8>> {
