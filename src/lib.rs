@@ -18,16 +18,10 @@ impl BinaryNumber {
         }
     }
 
-    pub fn number_of_check_bits(&self) -> i32 {
-        let base = 2f32;
-        let mut k = 0;
-        loop {
-            // 2^k - n - 1 >= k
-            if (base.powi(k) - (self.payload_length + 1) as f32) as i32 >= k {
-                return k;
-            }
-            k += 1;
-        }
+    pub fn number_of_check_bits(&self) -> u8 {
+        (0_u8..)
+            .find(|&k| 1_u16 << k >= k as u16 + self.payload_length as u16 + 1)
+            .unwrap()
     }
 
     pub fn check_bit_positions(&self) -> Vec<u8> {
@@ -186,7 +180,7 @@ mod tests {
         case(0b1010101, 4),
         case(0b10101010, 4)
     )]
-    fn num_of_check_bits(input: u8, expected: i32) {
+    fn num_of_check_bits(input: u8, expected: u8) {
         let binary_number = BinaryNumber::new(input);
         assert_eq!(binary_number.number_of_check_bits(), expected);
     }
