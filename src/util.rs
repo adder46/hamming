@@ -12,10 +12,7 @@ pub fn bin2dec(bits: Vec<Bit>) -> u8 {
 
 #[allow(dead_code)]
 pub fn dec2bin(n: u8) -> Vec<Bit> {
-    (0..length(n))
-        .rev()
-        .map(|i| Bit((n >> i) & 1))
-        .collect()
+    (0..length(n)).rev().map(|i| Bit((n >> i) & 1)).collect()
 }
 
 pub fn length(n: u8) -> u8 {
@@ -50,7 +47,8 @@ mod tests {
     }
 
     #[rstest(
-        input, expected,
+        input,
+        expected,
         case(0b1, 1),
         case(0b10, 2),
         case(0b101, 3),
@@ -58,7 +56,7 @@ mod tests {
         case(0b10101, 5),
         case(0b101010, 6),
         case(0b1010101, 7),
-        case(0b10101010, 8),
+        case(0b10101010, 8)
     )]
     fn length(input: u8, expected: u8) {
         assert_eq!(super::length(input), expected);
