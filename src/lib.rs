@@ -132,7 +132,7 @@ mod tests {
         case(0b10101, vec![1, 2, 4, 8]),
         case(0b10101010, vec![1, 2, 4, 8]),
     )]
-    fn check_bits(input: u8, expected: Vec<u8>) {
+    fn check_bit_positions(input: u8, expected: Vec<u8>) {
         let binary_number = BinaryNumber::new(input);
         assert_eq!(binary_number.check_bit_positions(), expected);
     }
@@ -181,7 +181,7 @@ mod tests {
         case(0b1010101, 4),
         case(0b10101010, 4)
     )]
-    fn num_of_check_bits(input: u8, expected: u8) {
+    fn number_of_check_bits(input: u8, expected: u8) {
         let binary_number = BinaryNumber::new(input);
         assert_eq!(binary_number.number_of_check_bits(), expected);
     }
