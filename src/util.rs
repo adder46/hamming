@@ -12,28 +12,20 @@ pub fn bin2dec(bits: Vec<Bit>) -> u8 {
 
 #[allow(dead_code)]
 pub fn dec2bin(n: u8) -> Vec<Bit> {
-    (0..((n as f32).log2() as u8 + 1))
-        .into_iter()
+    (0..length(n))
         .rev()
         .map(|i| Bit((n >> i) & 1))
         .collect()
 }
 
+pub fn length(n: u8) -> u8 {
+    (n as f32).log2() as u8 + 1
+}
+
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::Bit;
     use rstest::*;
-
-    #[rstest(
-        input, expected,
-        case(vec![Bit(0)], 0),
-        case(vec![Bit(1)], 1),
-        case(vec![Bit(1), Bit(1)], 3),
-        case(vec![Bit(1), Bit(0), Bit(0), Bit(0)], 8),
-    )]
-    fn binary2decimal(input: Vec<Bit>, expected: u8) {
-        assert_eq!(bin2dec(input), expected);
-    }
 
     #[rstest(
         input, expected,
@@ -42,7 +34,33 @@ mod tests {
         case(3, vec![Bit(1), Bit(1)]),
         case(8, vec![Bit(1), Bit(0), Bit(0), Bit(0)]),
     )]
-    fn decimal2binary(input: u8, expected: Vec<Bit>) {
-        assert_eq!(dec2bin(input), expected);
+    fn dec2bin(input: u8, expected: Vec<Bit>) {
+        assert_eq!(super::dec2bin(input), expected);
+    }
+
+    #[rstest(
+        input, expected,
+        case(vec![Bit(0)], 0),
+        case(vec![Bit(1)], 1),
+        case(vec![Bit(1), Bit(1)], 3),
+        case(vec![Bit(1), Bit(0), Bit(0), Bit(0)], 8),
+    )]
+    fn bin2dec(input: Vec<Bit>, expected: u8) {
+        assert_eq!(super::bin2dec(input), expected);
+    }
+
+    #[rstest(
+        input, expected,
+        case(0b1, 1),
+        case(0b10, 2),
+        case(0b101, 3),
+        case(0b1010, 4),
+        case(0b10101, 5),
+        case(0b101010, 6),
+        case(0b1010101, 7),
+        case(0b10101010, 8),
+    )]
+    fn length(input: u8, expected: u8) {
+        assert_eq!(super::length(input), expected);
     }
 }

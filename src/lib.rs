@@ -1,4 +1,4 @@
-use crate::util::dec2bin;
+use crate::util::{dec2bin, length};
 use rand::Rng;
 use std::ops::{BitOrAssign, BitXor, BitXorAssign, ShlAssign};
 
@@ -14,11 +14,12 @@ impl BinaryNumber {
     pub fn new(n: u8) -> BinaryNumber {
         BinaryNumber {
             bits: dec2bin(n),
-            payload_length: ((n as f32).log2() + 1.0) as u8,
+            payload_length: length(n),
         }
     }
 
     pub fn number_of_check_bits(&self) -> u8 {
+        // 2^k - n - 1 >= k
         (0_u8..)
             .find(|&k| 1_u16 << k >= k as u16 + self.payload_length as u16 + 1)
             .unwrap()
