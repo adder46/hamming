@@ -18,15 +18,21 @@ impl BinaryNumber {
         }
     }
 
+    pub fn make_space_for_check_bits(&mut self) {
+        self.check_bit_positions().into_iter().for_each(|pos| {
+            self.bits.insert(pos as usize - 1, Bit(0));
+        });
+    }
+
+    pub fn check_bit_positions(&self) -> Vec<u8> {
+        (0..self.number_of_check_bits()).map(|i| 1 << i).collect()
+    }
+
     pub fn number_of_check_bits(&self) -> u8 {
         // 2^k - n - 1 >= k
         (0_u8..)
             .find(|&k| 1_u16 << k >= k as u16 + self.payload_length as u16 + 1)
             .unwrap()
-    }
-
-    pub fn check_bit_positions(&self) -> Vec<u8> {
-        (0..self.number_of_check_bits()).map(|i| 1 << i).collect()
     }
 
     pub fn compute_check_bits(&self) -> Vec<Bit> {
@@ -41,19 +47,16 @@ impl BinaryNumber {
         c
     }
 
-    pub fn make_space_for_check_bits(&mut self) {
-        self.check_bit_positions().into_iter().for_each(|pos| {
-            self.bits.insert(pos as usize - 1, Bit(0));
+    fn bits_at_covered_positions(&self) -> Vec<Vec<Bit>> {
+        let mut bits = vec![];
+        self.covered_positions().into_iter().for_each(|pos_group| {
+            let mut covered = vec![];
+            pos_group.into_iter().for_each(|pos| {
+                covered.push(self.bits[pos as usize - 1]);
+            });
+            bits.push(covered);
         });
-    }
-
-    pub fn flip_bit(&mut self, index: usize) {
-        self.bits[index - 1] ^= Bit(1);
-    }
-
-    pub fn flip_random_bit(&mut self) {
-        let random_index = rand::thread_rng().gen_range(0..self.bits.len());
-        self.bits[random_index] ^= Bit(1);
+        bits
     }
 
     fn covered_positions(&self) -> Vec<Vec<u8>> {
@@ -68,16 +71,13 @@ impl BinaryNumber {
         cp
     }
 
-    fn bits_at_covered_positions(&self) -> Vec<Vec<Bit>> {
-        let mut bits = vec![];
-        self.covered_positions().into_iter().for_each(|pos_group| {
-            let mut covered = vec![];
-            pos_group.into_iter().for_each(|pos| {
-                covered.push(self.bits[pos as usize - 1]);
-            });
-            bits.push(covered);
-        });
-        bits
+    pub fn flip_bit(&mut self, index: usize) {
+        self.bits[index - 1] ^= Bit(1);
+    }
+
+    pub fn flip_random_bit(&mut self) {
+        let random_index = rand::thread_rng().gen_range(0..self.bits.len());
+        self.bits[random_index] ^= Bit(1);
     }
 }
 
@@ -126,6 +126,16 @@ mod tests {
         assert_eq!(binary_number.bits, expected);
     }
 
+    #[test]
+    fn make_space_for_check_bits() {
+        let mut binary_number = BinaryNumber::new(0b1010);
+        binary_number.make_space_for_check_bits();
+        assert_eq!(
+            binary_number.bits,
+            vec![Bit(0), Bit(0), Bit(1), Bit(0), Bit(0), Bit(1), Bit(0)]
+        );
+    }
+
     #[rstest(
         input, expected,
         case(0b1010, vec![1, 2, 4]),
@@ -138,17 +148,27 @@ mod tests {
     }
 
     #[rstest(
-        input, expected,
-        case(0b10101010, vec![
-            vec![1, 3, 5, 7],
-            vec![2, 3, 6, 7],
-            vec![4, 5, 6, 7],
-            vec![8],
-        ])
+        input,
+        expected,
+        case(0b10, 3),
+        case(0b101, 3),
+        case(0b1010, 3),
+        case(0b10101, 4),
+        case(0b101010, 4),
+        case(0b1010101, 4),
+        case(0b10101010, 4)
     )]
-    fn covered_positions(input: u8, expected: Vec<Vec<u8>>) {
+    fn number_of_check_bits(input: u8, expected: u8) {
         let binary_number = BinaryNumber::new(input);
-        assert_eq!(binary_number.covered_positions(), expected);
+        assert_eq!(binary_number.number_of_check_bits(), expected);
+    }
+
+    #[test]
+    fn compute_check_bits() {
+        let mut binary_number = BinaryNumber::new(0b1010);
+        binary_number.make_space_for_check_bits();
+        let check_bits = binary_number.compute_check_bits();
+        assert_eq!(check_bits, vec![Bit(1), Bit(0), Bit(1)]);
     }
 
     #[rstest(
@@ -171,18 +191,30 @@ mod tests {
     }
 
     #[rstest(
-        input,
-        expected,
-        case(0b10, 3),
-        case(0b101, 3),
-        case(0b1010, 3),
-        case(0b10101, 4),
-        case(0b101010, 4),
-        case(0b1010101, 4),
-        case(0b10101010, 4)
+        input, expected,
+        case(0b10101010, vec![
+            vec![1, 3, 5, 7],
+            vec![2, 3, 6, 7],
+            vec![4, 5, 6, 7],
+            vec![8],
+        ])
     )]
-    fn number_of_check_bits(input: u8, expected: u8) {
+    fn covered_positions(input: u8, expected: Vec<Vec<u8>>) {
         let binary_number = BinaryNumber::new(input);
-        assert_eq!(binary_number.number_of_check_bits(), expected);
+        assert_eq!(binary_number.covered_positions(), expected);
+    }
+
+    #[test]
+    fn flip_bit() {
+        let mut binary_number = BinaryNumber::new(0b1010);
+        binary_number.flip_bit(3);
+        assert_eq!(binary_number.bits, vec![Bit(1), Bit(0), Bit(0), Bit(0)]);
+    }
+
+    #[test]
+    fn flip_random_bit() {
+        let mut binary_number = BinaryNumber::new(0b1010);
+        binary_number.flip_random_bit();
+        assert_ne!(binary_number.bits, vec![Bit(1), Bit(0), Bit(1), Bit(0)]);
     }
 }
